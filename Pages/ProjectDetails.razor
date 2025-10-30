@@ -13,6 +13,9 @@ else
     <h2>@project.Name</h2>
     <p>Created: @project.CreationDate.ToString("u")</p>
     <p>Price: @project.Price</p>
+    <div class="mb-3">
+        <button class="btn btn-outline-secondary" @onclick="GotoEditProject">Edit Project</button>
+    </div>
 }
 
 <div class="mb-3">
@@ -80,6 +83,11 @@ else
     private void GotoAddItem()
     {
         Navigation.NavigateTo($"/projects/{ProjectId}/items/add");
+    }
+
+    private void GotoEditProject()
+    {
+        Navigation.NavigateTo($"/project/{ProjectId}/edit");
     }
 
     private void EditItem(int itemId)

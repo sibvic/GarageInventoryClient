@@ -1,0 +1,86 @@
+@page "/project/{ProjectId:int}/edit"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Project</PageTitle>
+
+<h3>Edit Project</h3>
+
+@if (isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else if (projectModel is null)
+{
+    <p class="text-danger">Project not found.</p>
+}
+else
+{
+    <EditForm Model="projectModel" OnValidSubmit="DoSaveProject">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="mb-3">
+            <label for="projectName" class="form-label">Project Name</label>
+            <InputText id="projectName" class="form-control" @bind-Value="projectModel.Name" />
+            <ValidationMessage For="@(() => projectModel.Name)" />
+        </div>
+        <div class="mb-3">
+            <label for="projectPrice" class="form-label">Project Price</label>
+            <InputNumber id="projectPrice" class="form-control" @bind-Value="projectModel.Price" />
+            <ValidationMessage For="@(() => projectModel.Price)" />
+        </div>
+        <button class="btn btn-primary" type="submit" disabled="@isSubmitting">Save</button>
+        <button class="btn btn-secondary ms-2" type="button" @onclick="Cancel" disabled="@isSubmitting">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int ProjectId { get; set; }
+
+    private EditProjectModel? projectModel;
+    private bool isSubmitting = false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var existing = await Http.GetFromJsonAsync<ProjectDto>($"/projects/{ProjectId}");
+        if (existing is not null)
+        {
+            projectModel = new EditProjectModel
+            {
+                Id = existing.Id,
+                Name = existing.Name,
+                Price = existing.Price
+            };
+        }
+        isLoading = false;
+    }
+
+    private async Task DoSaveProject()
+    {
+        if (projectModel is null) return;
+        isSubmitting = true;
+        var payload = new
+        {
+            Id = projectModel.Id,
+            Name = projectModel.Name,
+            Price = projectModel.Price
+        };
+        var response = await Http.PutAsJsonAsync($"/projects/{ProjectId}", payload);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo($"/project/{ProjectId}");
+        }
+        isSubmitting = false;
+    }
+
+    private void Cancel() => Navigation.NavigateTo($"/project/{ProjectId}");
+
+    public class EditProjectModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal? Price { get; set; }
+    }
+}
