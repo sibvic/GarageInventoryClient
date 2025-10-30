@@ -14,6 +14,11 @@
         <InputText id="projectName" class="form-control" @bind-Value="projectModel.Name" />
         <ValidationMessage For="@(() => projectModel.Name)" />
     </div>
+    <div class="mb-3">
+        <label for="projectPrice" class="form-label">Project Price</label>
+        <InputNumber id="projectPrice" class="form-control" @bind-Value="projectModel.Price" />
+        <ValidationMessage For="@(() => projectModel.Price)" />
+    </div>
     <button class="btn btn-primary" type="submit">Add Project</button>
     <button class="btn btn-secondary ms-2" type="button" @onclick="Cancel">Cancel</button>
 </EditForm>
