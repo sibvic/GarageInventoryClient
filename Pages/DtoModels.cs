@@ -33,7 +33,7 @@ public class LocationDto
 
 public enum ItemStatus
 {
-    Unknown = 0,
-    InStock = 1,
-    OutOfStock = 2
+    Sold = 0,
+    Used = 1,
+    InStock = 2
 }

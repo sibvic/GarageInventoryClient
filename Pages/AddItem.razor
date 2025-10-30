@@ -45,7 +45,7 @@
                 <option value="">(Select status)</option>
                 @foreach (var status in Enum.GetValues(typeof(ItemStatus)))
                 {
-                    <option value="@((int)status)">@status</option>
+                    <option value="@((int)status)">@GetStatusLabel((ItemStatus)status)</option>
                 }
             </InputSelect>
         </div>
@@ -88,12 +88,14 @@
         project = await Http.GetFromJsonAsync<ProjectDto>($"/projects/{projectId}");
         locations = await Http.GetFromJsonAsync<List<LocationDto>>("/locations");
         newItem.ProjectId = projectId;
+        // Set default status to InStock
+        newItem.Status = ItemStatus.InStock;
     }
 
     private async Task CreateItem()
     {
         // Adjust API route to your backend
-        var requestUri = $"api/projects/{projectId}/items";
+        var requestUri = $"/items";
         try
         {
             var response = await Http.PostAsJsonAsync(requestUri, newItem);
@@ -115,6 +117,17 @@
     private void Cancel()
     {
         Nav.NavigateTo($"/projects/{projectId}");
+    }
+
+    private string GetStatusLabel(ItemStatus status)
+    {
+        return status switch
+        {
+            ItemStatus.Sold => "Продано",
+            ItemStatus.Used => "Израсходовано",
+            ItemStatus.InStock => "В наличии",
+            _ => status.ToString()
+        };
     }
 
     public class NewItemDto
