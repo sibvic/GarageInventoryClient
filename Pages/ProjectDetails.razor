@@ -36,9 +36,7 @@ else
                 <th>Manufacturer #</th>
                 <th>SKU</th>
                 <th>In Price</th>
-                <th>In Date</th>
                 <th>Out Price</th>
-                <th>Out Date</th>
                 <th>Status</th>
                 <th>Description</th>
                 <th>Location</th>
@@ -53,9 +51,7 @@ else
                     <td>@item.ManufacturerNumber</td>
                     <td>@item.Sku</td>
                     <td>@item.InPrice</td>
-                    <td>@(item.InDate?.ToString("u"))</td>
-                    <td>@item.OutPrice</td>
-                    <td>@(item.OutDate?.ToString("u"))</td>
+                    <td>@item.OutPrice<br/>@(item.OutDate?.ToString("u"))</td>
                     <td>@item.Status</td>
                     <td>@item.Description</td>
                     <td>@item.Location?.Name</td>
