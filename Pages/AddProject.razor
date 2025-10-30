@@ -1,0 +1,43 @@
+@page "/add-project"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Add Project</PageTitle>
+
+<h3>Add New Project</h3>
+
+<EditForm Model="projectModel" OnValidSubmit="DoAddProject">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label for="projectName" class="form-label">Project Name</label>
+        <InputText id="projectName" class="form-control" @bind-Value="projectModel.Name" />
+        <ValidationMessage For="@(() => projectModel.Name)" />
+    </div>
+    <button class="btn btn-primary" type="submit">Add Project</button>
+    <button class="btn btn-secondary ms-2" type="button" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+@code {
+    private ProjectCreateModel projectModel = new();
+    private bool isSubmitting = false;
+
+    private async Task DoAddProject()
+    {
+        isSubmitting = true;
+        var response = await Http.PostAsJsonAsync("/projects", projectModel);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/");
+        }
+        // TODO: Additional error handling could be added here
+        isSubmitting = false;
+    }
+
+    private void Cancel() => Navigation.NavigateTo("/");
+
+    public class ProjectCreateModel
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+}

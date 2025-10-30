@@ -1,0 +1,141 @@
+@page "/projects/{projectId:int}/items/add"
+
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Add Item</PageTitle>
+
+<div class="container mt-4">
+    <h2 class="mb-3">Add Item to Project @projectId</h2>
+
+    <EditForm Model="newItem" OnValidSubmit="CreateItem">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <!-- Name -->
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control" @bind-Value="newItem.Name" />
+            <ValidationMessage For="() => newItem.Name" />
+        </div>
+        <!-- Manufacturer Number -->
+        <div class="mb-3">
+            <label class="form-label">Manufacturer #</label>
+            <InputText class="form-control" @bind-Value="newItem.ManufacturerNumber" />
+        </div>
+        <!-- SKU -->
+        <div class="mb-3">
+            <label class="form-label">SKU</label>
+            <InputText class="form-control" @bind-Value="newItem.Sku" />
+        </div>
+        <!-- In Price -->
+        <div class="mb-3">
+            <label class="form-label">Purchase Price</label>
+            <InputNumber class="form-control" @bind-Value="newItem.InPrice" />
+        </div>
+        <!-- Out Price -->
+        <div class="mb-3">
+            <label class="form-label">Sale Price</label>
+            <InputNumber class="form-control" @bind-Value="newItem.OutPrice" />
+        </div>
+        <!-- Status -->
+        <div class="mb-3">
+            <label class="form-label">Status</label>
+            <InputSelect class="form-select" @bind-Value="newItem.Status">
+                <option value="">(Select status)</option>
+                @foreach (var status in Enum.GetValues(typeof(ItemStatus)))
+                {
+                    <option value="@((int)status)">@status</option>
+                }
+            </InputSelect>
+        </div>
+        <!-- Location -->
+        <div class="mb-3">
+            <label class="form-label">Location</label>
+            <InputSelect class="form-select" @bind-Value="newItem.LocationId">
+                <option value="">(Select location)</option>
+                @if (locations != null)
+                {
+                    foreach (var loc in locations)
+                    {
+                        <option value="@loc.Id">@loc.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+        <!-- Description -->
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <InputTextArea class="form-control" @bind-Value="newItem.Description" />
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int projectId { get; set; }
+
+    private NewItemDto newItem = new();
+    private List<LocationDto>? locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        locations = await Http.GetFromJsonAsync<List<LocationDto>>("/locations");
+        newItem.ProjectId = projectId;
+    }
+
+    private async Task CreateItem()
+    {
+        // Adjust API route to your backend
+        var requestUri = $"api/projects/{projectId}/items";
+        try
+        {
+            var response = await Http.PostAsJsonAsync(requestUri, newItem);
+            if (response.IsSuccessStatusCode)
+            {
+                Nav.NavigateTo($"/projects/{projectId}");
+            }
+            else
+            {
+                // Minimal UX: stay on page; ideally show error
+            }
+        }
+        catch
+        {
+            // Minimal UX: stay on page; ideally show error
+        }
+    }
+
+    private void Cancel()
+    {
+        Nav.NavigateTo($"/projects/{projectId}");
+    }
+
+    public class NewItemDto
+    {
+        [Required]
+        [StringLength(100)]
+        public string? Name { get; set; }
+
+        [StringLength(100)]
+        public string? ManufacturerNumber { get; set; }
+
+        public int? LocationId { get; set; }
+
+        [StringLength(50)]
+        public string? Sku { get; set; }
+
+        public double? InPrice { get; set; }
+        public double? OutPrice { get; set; }
+        public ItemStatus? Status { get; set; }
+
+        [StringLength(1000)]
+        public string? Description { get; set; }
+
+        public int ProjectId { get; set; } // Set in OnInitialized
+    }
+}

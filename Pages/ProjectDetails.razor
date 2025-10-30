@@ -1,0 +1,86 @@
+@page "/project/{ProjectId:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Project Details</PageTitle>
+
+@if (project == null)
+{
+    <p><em>Loading project...</em></p>
+}
+else
+{
+    <h2>@project.Name (@project.Id)</h2>
+    <p>Created: @project.CreationDate.ToString("u")</p>
+}
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="GotoAddItem">Add Item</button>
+</div>
+
+@if (items == null)
+{
+    <p><em>Loading items...</em></p>
+}
+else if (items.Count == 0)
+{
+    <p>No items in this project.</p>
+}
+else
+{
+    <h3>Items</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Manufacturer #</th>
+                <th>SKU</th>
+                <th>In Price</th>
+                <th>In Date</th>
+                <th>Out Price</th>
+                <th>Out Date</th>
+                <th>Status</th>
+                <th>Description</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in items)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>@item.ManufacturerNumber</td>
+                    <td>@item.Sku</td>
+                    <td>@item.InPrice</td>
+                    <td>@(item.InDate?.ToString("u"))</td>
+                    <td>@item.OutPrice</td>
+                    <td>@(item.OutDate?.ToString("u"))</td>
+                    <td>@item.Status</td>
+                    <td>@item.Description</td>
+                    <td>@item.Location?.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int ProjectId { get; set; }
+    private ProjectDto? project;
+    private List<ItemDto>? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        project = await Http.GetFromJsonAsync<ProjectDto>($"/projects/{ProjectId}");
+        var allItems = await Http.GetFromJsonAsync<List<ItemDto>>("/items");
+        items = allItems?.Where(i => i.ProjectId == ProjectId).ToList() ?? new();
+    }
+
+    private void GotoAddItem()
+    {
+        Navigation.NavigateTo($"/project/{ProjectId}/items/add");
+    }
+} 

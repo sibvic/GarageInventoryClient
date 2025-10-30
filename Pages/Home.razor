@@ -2,6 +2,38 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Projects</h1>
 
-Welcome to your new app.
+<a class="btn btn-primary mb-3" href="add-project">Add Project</a>
+
+@if (projects == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (projects.Count == 0)
+{
+    <p>No projects found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var project in projects)
+        {
+            <li>
+                <a href="project/@project.Id">@project.Name</a> (@project.Id) - Created: @project.CreationDate.ToString("u")
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private List<ProjectDto>? projects;
+
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await Http.GetFromJsonAsync<List<ProjectDto>>("/projects");
+    }
+
+    [Inject]
+    public HttpClient Http { get; set; } = default!;
+}
