@@ -73,8 +73,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         project = await Http.GetFromJsonAsync<ProjectDto>($"/projects/{ProjectId}");
-        var allItems = await Http.GetFromJsonAsync<List<ItemDto>>("/items");
-        items = allItems?.Where(i => i.ProjectId == ProjectId).ToList() ?? new();
+        items = await Http.GetFromJsonAsync<List<ItemDto>>($"/items?projectId={ProjectId}") ?? new();
     }
 
     private void GotoAddItem()
