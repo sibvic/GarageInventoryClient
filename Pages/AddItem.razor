@@ -45,23 +45,38 @@
                 <option value="">(Select status)</option>
                 @foreach (var status in Enum.GetValues(typeof(ItemStatus)))
                 {
-                    <option value="@((int)status)">@GetStatusLabel((ItemStatus)status)</option>
+                    <option value="@(status)">@GetStatusLabel((ItemStatus)status)</option>
                 }
             </InputSelect>
         </div>
         <!-- Location -->
         <div class="mb-3">
             <label class="form-label">Location</label>
-            <InputSelect class="form-select" @bind-Value="newItem.LocationId">
-                <option value="">(Select location)</option>
-                @if (locations != null)
-                {
-                    foreach (var loc in locations)
+            <div class="d-flex gap-2">
+                <InputSelect class="form-select" @bind-Value="newItem.LocationId">
+                    <option value="">(Select location)</option>
+                    @if (locations != null)
                     {
-                        <option value="@loc.Id">@loc.Name</option>
+                        foreach (var loc in locations)
+                        {
+                            <option value="@loc.Id">@loc.Name</option>
+                        }
                     }
+                </InputSelect>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => ToggleAddLocation(true)">+ Add</button>
+            </div>
+            @if (isAddingLocation)
+            {
+                <div class="mt-2 d-flex gap-2 align-items-start">
+                    <InputText class="form-control" placeholder="New location name" @bind-Value="newLocationName" />
+                    <button type="button" class="btn btn-success" disabled="@(isSavingLocation || string.IsNullOrWhiteSpace(newLocationName))" @onclick="AddLocation">Save</button>
+                    <button type="button" class="btn btn-link" @onclick="() => ToggleAddLocation(false)">Cancel</button>
+                </div>
+                @if (!string.IsNullOrEmpty(addLocationError))
+                {
+                    <div class="text-danger small mt-1">@addLocationError</div>
                 }
-            </InputSelect>
+            }
         </div>
         <!-- Description -->
         <div class="mb-3">
@@ -111,6 +126,64 @@
         catch
         {
             // Minimal UX: stay on page; ideally show error
+        }
+    }
+
+    private bool isAddingLocation;
+    private bool isSavingLocation;
+    private string newLocationName = string.Empty;
+    private string? addLocationError;
+
+    private void ToggleAddLocation(bool show)
+    {
+        isAddingLocation = show;
+        addLocationError = null;
+        if (!show)
+        {
+            newLocationName = string.Empty;
+        }
+    }
+
+    private async Task AddLocation()
+    {
+        addLocationError = null;
+        var name = (newLocationName ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            addLocationError = "Name is required.";
+            return;
+        }
+
+        try
+        {
+            isSavingLocation = true;
+            var response = await Http.PostAsJsonAsync("/locations", new { name });
+            if (!response.IsSuccessStatusCode)
+            {
+                addLocationError = "Failed to create location.";
+                return;
+            }
+
+            // Refresh locations and select the newly added one
+            locations = await Http.GetFromJsonAsync<List<LocationDto>>("/locations");
+            var created = locations?.LastOrDefault(l => string.Equals(l.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (created != null)
+            {
+                newItem.LocationId = created.Id;
+            }
+
+            // Reset add UI
+            newLocationName = string.Empty;
+            isAddingLocation = false;
+        }
+        catch
+        {
+            addLocationError = "Error creating location.";
+        }
+        finally
+        {
+            isSavingLocation = false;
+            StateHasChanged();
         }
     }
 
