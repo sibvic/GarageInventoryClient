@@ -7,7 +7,7 @@
 <PageTitle>Add Item</PageTitle>
 
 <div class="container mt-4">
-    <h2 class="mb-3">Add Item to Project @projectId</h2>
+    <h2 class="mb-3">Add Item to Project @(project?.Name ?? projectId.ToString())</h2>
 
     <EditForm Model="newItem" OnValidSubmit="CreateItem">
         <DataAnnotationsValidator />
@@ -81,9 +81,11 @@
 
     private NewItemDto newItem = new();
     private List<LocationDto>? locations;
+    private ProjectDto? project;
 
     protected override async Task OnInitializedAsync()
     {
+        project = await Http.GetFromJsonAsync<ProjectDto>($"/projects/{projectId}");
         locations = await Http.GetFromJsonAsync<List<LocationDto>>("/locations");
         newItem.ProjectId = projectId;
     }
