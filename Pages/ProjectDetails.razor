@@ -10,17 +10,10 @@
 }
 else
 {
-    <h2>@project.Name</h2>
+    <h2>@project.Name <button class="btn btn-outline-secondary" @onclick="GotoEditProject">Edit Project</button></h2>
     <p>Created: @project.CreationDate.ToString("u")</p>
     <p>Price: @project.Price</p>
-    <div class="mb-3">
-        <button class="btn btn-outline-secondary" @onclick="GotoEditProject">Edit Project</button>
-    </div>
 }
-
-<div class="mb-3">
-    <button class="btn btn-primary" @onclick="GotoAddItem">Add Item</button>
-</div>
 
 @if (items == null)
 {
@@ -32,7 +25,10 @@ else if (items.Count == 0)
 }
 else
 {
-    <h3>Items</h3>
+    <div class="d-flex align-items-center mb-2">
+        <h3 class="mb-0 me-2">Items</h3>
+        <button class="btn btn-sm btn-primary" @onclick="GotoAddItem">+</button>
+    </div>
     <table class="table">
         <thead>
             <tr>
