@@ -116,7 +116,7 @@
             var response = await Http.PostAsJsonAsync(requestUri, newItem);
             if (response.IsSuccessStatusCode)
             {
-                Nav.NavigateTo($"/projects/{projectId}");
+                Nav.NavigateTo($"/project/{projectId}");
             }
             else
             {
@@ -189,7 +189,7 @@
 
     private void Cancel()
     {
-        Nav.NavigateTo($"/projects/{projectId}");
+        Nav.NavigateTo($"/project/{projectId}");
     }
 
     private string GetStatusLabel(ItemStatus status)
