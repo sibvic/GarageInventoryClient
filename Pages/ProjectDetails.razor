@@ -32,7 +32,6 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
                 <th>Name</th>
                 <th>Manufacturer #</th>
                 <th>SKU</th>
@@ -43,13 +42,13 @@ else
                 <th>Status</th>
                 <th>Description</th>
                 <th>Location</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var item in items)
             {
                 <tr>
-                    <td>@item.Id</td>
                     <td>@item.Name</td>
                     <td>@item.ManufacturerNumber</td>
                     <td>@item.Sku</td>
@@ -60,6 +59,9 @@ else
                     <td>@item.Status</td>
                     <td>@item.Description</td>
                     <td>@item.Location?.Name</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditItem(item.Id)">Edit</button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -82,5 +84,10 @@ else
     private void GotoAddItem()
     {
         Navigation.NavigateTo($"/projects/{ProjectId}/items/add");
+    }
+
+    private void EditItem(int itemId)
+    {
+        Navigation.NavigateTo($"/projects/{ProjectId}/items/{itemId}/edit");
     }
 } 

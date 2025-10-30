@@ -1,0 +1,187 @@
+@page "/projects/{projectId:int}/items/{itemId:int}/edit"
+
+@using System.ComponentModel.DataAnnotations
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Edit Item</PageTitle>
+
+<div class="container mt-4">
+    <h2 class="mb-3">Edit Item @(item?.Name ?? itemId.ToString()) in Project @(project?.Name ?? projectId.ToString())</h2>
+
+    @if (isLoading)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else if (loadError != null)
+    {
+        <div class="alert alert-danger">@loadError</div>
+    }
+    else if (item != null)
+    {
+        <EditForm Model="item" OnValidSubmit="SaveItem">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- Name -->
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="item.Name" />
+            </div>
+
+            <!-- Manufacturer Number -->
+            <div class="mb-3">
+                <label class="form-label">Manufacturer #</label>
+                <InputText class="form-control" @bind-Value="item.ManufacturerNumber" />
+            </div>
+
+            <!-- SKU -->
+            <div class="mb-3">
+                <label class="form-label">SKU</label>
+                <InputText class="form-control" @bind-Value="item.Sku" />
+            </div>
+
+            <!-- In Price -->
+            <div class="mb-3">
+                <label class="form-label">Purchase Price</label>
+                <InputNumber class="form-control" @bind-Value="item.InPrice" />
+            </div>
+
+            <!-- In Date -->
+            <div class="mb-3">
+                <label class="form-label">In Date (UTC)</label>
+                <InputDate DateFormat="yyyy-MM-dd" class="form-control" @bind-Value="item.InDate" />
+            </div>
+
+            <!-- Out Price -->
+            <div class="mb-3">
+                <label class="form-label">Sale Price</label>
+                <InputNumber class="form-control" @bind-Value="item.OutPrice" />
+            </div>
+
+            <!-- Out Date -->
+            <div class="mb-3">
+                <label class="form-label">Out Date (UTC)</label>
+                <InputDate DateFormat="yyyy-MM-dd" class="form-control" @bind-Value="item.OutDate" />
+            </div>
+
+            <!-- Status -->
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <InputSelect class="form-select" @bind-Value="item.Status">
+                    <option value="">(Select status)</option>
+                    @foreach (var status in Enum.GetValues(typeof(ItemStatus)))
+                    {
+                        <option value="@(status)">@GetStatusLabel((ItemStatus)status)</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <!-- Location -->
+            <div class="mb-3">
+                <label class="form-label">Location</label>
+                <InputSelect class="form-select" @bind-Value="item.LocationId">
+                    <option value="">(Select location)</option>
+                    @if (locations != null)
+                    {
+                        foreach (var loc in locations)
+                        {
+                            <option value="@loc.Id">@loc.Name</option>
+                        }
+                    }
+                </InputSelect>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <InputTextArea class="form-control" @bind-Value="item.Description" />
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" disabled="@isSaving">Save</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int projectId { get; set; }
+    [Parameter]
+    public int itemId { get; set; }
+
+    private ProjectDto? project;
+    private ItemDto? item;
+    private List<LocationDto>? locations;
+    private bool isLoading = true;
+    private bool isSaving;
+    private string? loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var projectTask = Http.GetFromJsonAsync<ProjectDto>($"/projects/{projectId}");
+            var itemTask = Http.GetFromJsonAsync<ItemDto>($"/items/{itemId}");
+            var locationsTask = Http.GetFromJsonAsync<List<LocationDto>>("/locations");
+
+            await Task.WhenAll(projectTask!, itemTask!, locationsTask!);
+
+            project = projectTask!.Result;
+            item = itemTask!.Result;
+            locations = locationsTask!.Result;
+
+            if (item != null)
+            {
+                // Ensure ProjectId is correct for this route
+                item.ProjectId = projectId;
+            }
+        }
+        catch
+        {
+            loadError = "Failed to load item or project.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveItem()
+    {
+        if (item is null) return;
+        isSaving = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"/items/{itemId}", item);
+            if (response.IsSuccessStatusCode)
+            {
+                Nav.NavigateTo($"/project/{projectId}");
+            }
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Nav.NavigateTo($"/project/{projectId}");
+    }
+
+    private string GetStatusLabel(ItemStatus status)
+    {
+        return status switch
+        {
+            ItemStatus.Sold => "Продано",
+            ItemStatus.Used => "Израсходовано",
+            ItemStatus.InStock => "В наличии",
+            _ => status.ToString()
+        };
+    }
+}
+
+
