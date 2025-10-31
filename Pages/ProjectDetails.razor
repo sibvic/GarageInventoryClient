@@ -12,16 +12,15 @@ else
 {
     <h2>@project.Name <button class="btn btn-outline-secondary" @onclick="GotoEditProject">Edit Project</button></h2>
     <p>Created: @project.CreationDate.ToString("u")</p>
-    <p>Price: @project.Price</p>
+    @if (project.Price != null)
+    {
+        <p>Price: @project.Price</p>
+    }
 }
 
 @if (items == null)
 {
     <p><em>Loading items...</em></p>
-}
-else if (items.Count == 0)
-{
-    <p>No items in this project.</p>
 }
 else
 {
