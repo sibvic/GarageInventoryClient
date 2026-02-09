@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 
 <PageTitle>Home</PageTitle>
 
@@ -22,6 +22,7 @@ else
                 <th>Name</th>
                 <th>Created</th>
                 <th>Price</th>
+                <th>Sold Sum</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -34,6 +35,7 @@ else
                     </td>
                     <td>@project.CreationDate.ToString("u")</td>
                     <td>@project.Price</td>
+                    <td>@project.SoldSumm.ToString("N2")</td>
                     <td>
                         <a class="btn btn-sm btn-outline-secondary" href="project/@project.Id/edit">Edit</a>
                     </td>

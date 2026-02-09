@@ -6,6 +6,7 @@ public class ProjectDto
     public string Name { get; set; } = string.Empty;
     public DateTime CreationDate { get; set; }
     public decimal? Price { get; set; }
+    public decimal SoldSumm { get; set; }
 }
 
 public class ItemDto

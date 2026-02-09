@@ -28,6 +28,18 @@ else
         <h3 class="mb-0 me-2">Items</h3>
         <button class="btn btn-sm btn-primary" @onclick="GotoAddItem">+</button>
     </div>
+    <div class="mb-3">
+        <label for="statusFilter" class="form-label">Filter by status:</label>
+        <select class="form-select" id="statusFilter" @bind="selectedFilter" style="max-width: 250px;">
+            <option value="@FilterOption.All">All items</option>
+            <option value="@FilterOption.InStock">In stock only</option>
+            <option value="@FilterOption.Sold">Sold only</option>
+            <option value="@FilterOption.Used">Used only</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <strong>Total Out Price: @totalOutPrice.ToString("N2")</strong>
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -43,7 +55,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in items)
+            @foreach (var item in filteredItems)
             {
                 <tr>
                     <td>@item.Name</td>
@@ -68,6 +80,28 @@ else
     public int ProjectId { get; set; }
     private ProjectDto? project;
     private List<ItemDto>? items;
+    private FilterOption selectedFilter = FilterOption.InStock;
+
+    private enum FilterOption
+    {
+        All,
+        InStock,
+        Sold,
+        Used
+    }
+
+    private IEnumerable<ItemDto> filteredItems => 
+        items?.Where(item => selectedFilter switch
+        {
+            FilterOption.All => true,
+            FilterOption.InStock => item.Status == ItemStatus.InStock,
+            FilterOption.Sold => item.Status == ItemStatus.Sold,
+            FilterOption.Used => item.Status == ItemStatus.Used,
+            _ => true
+        }) ?? Enumerable.Empty<ItemDto>();
+
+    private double totalOutPrice => 
+        filteredItems.Where(item => item.OutPrice.HasValue).Sum(item => item.OutPrice!.Value);
 
     protected override async Task OnInitializedAsync()
     {
